@@ -40,8 +40,8 @@ jobs:
             zap-baseline.py \
             -t http://localhost:8000 \
             -r zap-report.html \
-            -I
-        continue-on-error: true
+            -l Medium
+        continue-on-error: false
 
       - name: List report files (debug)
         if: always()
