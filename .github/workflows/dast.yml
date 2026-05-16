@@ -35,15 +35,29 @@ jobs:
         run: |
           mkdir -p ${{ github.workspace }}/zap-reports
           chmod 777 ${{ github.workspace }}/zap-reports
+
           docker run --network="host" \
-            -v ${{ github.workspace }}/zap-reports:/zap/wrk/:rw \
+            --name zap-container \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
             -t http://localhost:8000 \
-            -r zap-report.html \
-            -l Medium \
-            -d
-          echo "ZAP exit code: $?"
+            -r /zap/wrk/zap-report.html \
+            -l Medium || true
+
+          docker cp zap-container:/zap/wrk/zap-report.html \
+            ${{ github.workspace }}/zap-reports/zap-report.html || true
+
+          ls -la ${{ github.workspace }}/zap-reports/
+
+          ZAP_EXIT=$(docker inspect zap-container \
+            --format='{{.State.ExitCode}}')
+          echo "ZAP exit code: $ZAP_EXIT"
+
+          docker rm zap-container
+
+          if [ "$ZAP_EXIT" -ge 2 ]; then
+            exit $ZAP_EXIT
+          fi
         continue-on-error: true
 
       - name: List report files (debug)
@@ -51,8 +65,6 @@ jobs:
         run: |
           echo "=== Contenido de zap-reports ==="
           ls -la ${{ github.workspace }}/zap-reports/
-          echo "=== Contenido raiz ==="
-          ls -la ${{ github.workspace }}/
 
       - name: Upload ZAP Report
         uses: actions/upload-artifact@v4
