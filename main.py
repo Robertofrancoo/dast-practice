@@ -1,9 +1,8 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 import sqlite3
 
 app = FastAPI()
 
-# Base de datos en memoria (simulada)
 def init_db():
     conn = sqlite3.connect(":memory:")
     conn.execute("CREATE TABLE users (id INTEGER, name TEXT, password TEXT)")
@@ -26,7 +25,6 @@ def get_item(item_id: int):
     return {"item_id": item_id, "name": f"Item {item_id}"}
 
 # ⚠️ VULNERABILIDAD INTENCIONAL - SQL Injection
-# Nunca hagas esto en producción
 @app.get("/users")
 def get_user(name: str):
     query = f"SELECT * FROM users WHERE name = '{name}'"
