@@ -38,14 +38,12 @@ jobs:
 
           docker run --network="host" \
             --name zap-container \
+            -v ${{ github.workspace }}/zap-reports:/zap/wrk:rw \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
             -t http://localhost:8000 \
             -r /zap/wrk/zap-report.html \
             -l WARN || true
-
-          docker cp zap-container:/zap/wrk/zap-report.html \
-            ${{ github.workspace }}/zap-reports/zap-report.html || true
 
           ls -la ${{ github.workspace }}/zap-reports/
 
