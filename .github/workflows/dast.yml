@@ -24,8 +24,8 @@ jobs:
       - name: Wait for app to be ready
         run: |
           echo "Esperando que la app inicie..."
-          sleep 10
-          curl http://localhost:8000/health
+          sleep 15
+          curl -f http://localhost:8000/health
 
       - name: Pull OWASP ZAP Docker image
         run: docker pull ghcr.io/zaproxy/zaproxy:stable
@@ -41,12 +41,18 @@ jobs:
             zap-baseline.py \
             -t http://localhost:8000 \
             -r zap-report.html \
-            -l Medium
+            -l Medium \
+            -d
+          echo "ZAP exit code: $?"
         continue-on-error: true
 
       - name: List report files (debug)
         if: always()
-        run: ls -la ${{ github.workspace }}/zap-reports/
+        run: |
+          echo "=== Contenido de zap-reports ==="
+          ls -la ${{ github.workspace }}/zap-reports/
+          echo "=== Contenido raiz ==="
+          ls -la ${{ github.workspace }}/
 
       - name: Upload ZAP Report
         uses: actions/upload-artifact@v4
@@ -54,7 +60,8 @@ jobs:
         with:
           name: zap-security-report
           path: ${{ github.workspace }}/zap-reports/zap-report.html
-    
+          if-no-files-found: warn
+
       - name: Fail if High or Medium vulnerabilities found
         if: steps.zap_scan.outcome == 'failure'
         run: |
