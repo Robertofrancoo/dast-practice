@@ -31,6 +31,7 @@ jobs:
         run: docker pull ghcr.io/zaproxy/zaproxy:stable
 
       - name: Run OWASP ZAP Baseline Scan
+        id: zap_scan
         run: |
           mkdir -p ${{ github.workspace }}/zap-reports
           chmod 777 ${{ github.workspace }}/zap-reports
@@ -41,7 +42,7 @@ jobs:
             -t http://localhost:8000 \
             -r zap-report.html \
             -l Medium
-        continue-on-error: false
+        continue-on-error: true
 
       - name: List report files (debug)
         if: always()
@@ -53,3 +54,10 @@ jobs:
         with:
           name: zap-security-report
           path: ${{ github.workspace }}/zap-reports/zap-report.html
+    
+      - name: Fail if High or Medium vulnerabilities found
+        if: steps.zap_scan.outcome == 'failure'
+        run: |
+          echo "❌ DAST scan encontró vulnerabilidades Medium o High!"
+          echo "Descarga el reporte zap-security-report para ver los detalles."
+          exit 1
