@@ -1,12 +1,7 @@
-FROM python:3.11-slim
+FROM php:8.1-apache
 
-WORKDIR /app
+RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+COPY app/ /var/www/html/
 
-COPY main.py .
-
-EXPOSE 8000
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 80
