@@ -40,7 +40,7 @@ jobs:
             --name zap-container \
             -v ${{ github.workspace }}/zap-reports:/zap/wrk:rw \
             ghcr.io/zaproxy/zaproxy:stable \
-            zap-baseline.py \
+            zap-full-scan.py \ //zap-baseline.py
             -t http://localhost:8000 \
             -r /zap/wrk/zap-report.html \
             -l WARN || true
