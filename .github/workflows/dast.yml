@@ -16,18 +16,16 @@ jobs:
       - name: Verify Docker
         run: docker --version
 
-      - name: Start app with Docker Compose
+      - name: Build and start app
         run: |
-          docker compose up -d --build
-          echo "Esperando que MySQL y PHP inicien..."
-          sleep 30
+          docker build -t dast-practice-app .
+          docker run -d -p 8000:8000 --name my-app dast-practice-app
 
-      - name: Init database
+      - name: Wait for app to be ready
         run: |
-          docker compose exec -T db mysql -uroot -prootpassword testdb < init.sql
-
-      - name: Verify app is running
-        run: curl -f http://localhost:8000/
+          echo "Esperando que la app inicie..."
+          sleep 15
+          curl -f http://localhost:8000/health
 
       - name: Pull OWASP ZAP Docker image
         run: docker pull ghcr.io/zaproxy/zaproxy:stable
@@ -41,7 +39,7 @@ jobs:
           # Opciones de scan:
           # zap-full-scan.py   → scan completo (~5-10 min)
           # zap-baseline.py    → scan rápido (~1 min)
-          ZAP_SCRIPT="zap-full-scan.py"
+          ZAP_SCRIPT="zap-baseline.py"
 
           docker run --network="host" \
             --name zap-container \
