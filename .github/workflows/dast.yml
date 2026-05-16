@@ -42,7 +42,7 @@ jobs:
             zap-baseline.py \
             -t http://localhost:8000 \
             -r /zap/wrk/zap-report.html \
-            -l WARM || true
+            -l WARN || true
 
           docker cp zap-container:/zap/wrk/zap-report.html \
             ${{ github.workspace }}/zap-reports/zap-report.html || true
